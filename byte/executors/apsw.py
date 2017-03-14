@@ -42,8 +42,8 @@ class ApswExecutor(Executor):
     def cursor(self):
         return self.connect().cursor()
 
-    def execute(self, query):
-        sql, parameters = self.compiler.compile(query)
+    def execute(self, statement):
+        sql, parameters = self.compiler.compile(statement)
 
         if not sql:
             raise ValueError('Empty query')
