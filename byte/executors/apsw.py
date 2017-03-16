@@ -1,17 +1,32 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 from byte.compilers.sqlite import SqliteCompiler
-from byte.executors.base import Executor
+from byte.executors.core.base import ExecutorPlugin
 from byte.statements import StatementResult
 import apsw
 import os
 
 
-class ApswExecutor(Executor):
+class ApswExecutor(ExecutorPlugin):
+    key = 'apsw'
+
+    class Meta(ExecutorPlugin.Meta):
+        content_type = 'application/x-sqlite3'
+
+        extension = [
+            'db',
+            'sqlite'
+        ]
+
+        scheme = [
+            'apsw',
+            'sqlite'
+        ]
+
     def __init__(self, collection, model):
         super(ApswExecutor, self).__init__(collection, model)
 
-        self.compiler = SqliteCompiler(collection, model)
+        self.compiler = SqliteCompiler(self)
 
         self.connection = None
 
@@ -46,7 +61,7 @@ class ApswExecutor(Executor):
         sql, parameters = self.compiler.compile(statement)
 
         if not sql:
-            raise ValueError('Empty query')
+            raise ValueError('Empty statement')
 
         print('EXECUTE: %r %r' % (sql, parameters))
 
