@@ -1,0 +1,22 @@
+dist: trusty
+sudo: false
+language: python
+python:
+  - 2.7
+  - 3.6
+  - pypy-5.4.1
+  - pypy3.3-5.2-alpha1
+  - 2.6
+  - 3.3
+  - 3.4
+  - 3.5
+  - nightly
+install:
+  - travis_retry pip install coveralls
+  - travis_retry pip install tox-travis
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy'* ]]; then travis_retry pip install pyOpenSSL>=16.2.0; fi
+script:
+  - tox
+after_success:
+  - coveralls
+  - python setup.py bdist_wheel sdist
