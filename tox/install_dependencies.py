@@ -30,22 +30,20 @@ def install():
 
 
 def install_development():
-    return pip_install(
-        # Package requirements
+    pip_upgrade(
         os.path.abspath('../byte'),
-        os.path.abspath('../byte-sqlite'),
+        os.path.abspath('../byte-sqlite')
+    )
 
-        # Test requirements
+    pip_install(
+        '-rrequirements.txt',
         '-rtests/requirements.txt'
     )
 
 
 def install_release():
-    return pip_install(
-        # Package requirements
+    pip_install(
         '-rrequirements.txt',
-
-        # Test requirements
         '-rtests/requirements.txt'
     )
 
@@ -59,17 +57,23 @@ def install_travis():
     if branch != 'master':
         branch = 'develop'
 
-    return pip_install(
-        # Package requirements
+    pip_upgrade(
         'git+https://github.com/fuzeman/byte.git@%s' % (branch,),
         'git+https://github.com/fuzeman/byte-sqlite.git@%s' % (branch,),
+    )
 
-        # Test requirements
+    pip_install(
+        '-rrequirements.txt',
         '-rtests/requirements.txt'
     )
 
 
 def pip_install(*args):
+    p = subprocess.Popen(['pip', 'install'] + list(args), shell=False)
+    p.communicate()
+
+
+def pip_upgrade(*args):
     p = subprocess.Popen(['pip', 'install', '--upgrade'] + list(args), shell=False)
     p.communicate()
 
