@@ -1,16 +1,22 @@
+"""byte-apsw - executor module."""
 from __future__ import absolute_import, division, print_function
 
+from byte.executors.apsw.tasks import ApswSelectTask
 from byte.executors.core.base import ExecutorPlugin
 from byte.statements import SelectStatement
-from byte.executors.apsw.tasks import ApswSelectTask
+
 import apsw
 import os
 
 
 class ApswExecutor(ExecutorPlugin):
+    """APSW executor class."""
+
     key = 'apsw'
 
     class Meta(ExecutorPlugin.Meta):
+        """APSW executor metadata."""
+
         content_type = 'application/x-sqlite3'
 
         extension = [
@@ -24,12 +30,25 @@ class ApswExecutor(ExecutorPlugin):
         ]
 
     def __init__(self, collection, model):
+        """Create APSW executor.
+
+        :param collection: Collection
+        :type collection: byte.collection.Collection
+
+        :param model: Model
+        :type model: byte.model.Model
+        """
         super(ApswExecutor, self).__init__(collection, model)
 
         self.connection = None
 
     @property
     def path(self):
+        """Retrieve database path.
+
+        :return: Database Path
+        :rtype: str
+        """
         path = (
             self.collection.uri.netloc +
             self.collection.uri.path
@@ -45,6 +64,11 @@ class ApswExecutor(ExecutorPlugin):
         return self.plugins.get_compiler('sqlite')(self)
 
     def connect(self):
+        """Connect to database.
+
+        :return: APSW Connection
+        :rtype: apsw.Connection
+        """
         if self.connection:
             return self.connection
 
@@ -57,9 +81,19 @@ class ApswExecutor(ExecutorPlugin):
         return self.connection
 
     def cursor(self):
+        """Create database cursor.
+
+        :return: APSW Cursor
+        :rtype: apsw.Cursor
+        """
         return self.connect().cursor()
 
     def execute(self, statement):
+        """Execute statement.
+
+        :param statement: Statement
+        :type statement: byte.statements.core.base.Statement
+        """
         sql, parameters = self.compiler.compile(statement)
 
         if not sql:

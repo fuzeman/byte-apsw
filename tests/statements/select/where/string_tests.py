@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from byte.collection import Collection
 from byte.model import Model
 from byte.property import Property
@@ -16,6 +18,7 @@ class User(Model):
 
 
 def test_or():
+    """Test OR expression inside string can be compiled and executed."""
     users = Collection(User, 'apsw://:memory:?table=users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
@@ -28,7 +31,7 @@ def test_or():
             username    VARCHAR(255),
             password    VARCHAR(255)
         );
-        
+
         INSERT INTO users (id, username, password) VALUES
             (1, 'one', 'alpha'),
             (2, 'two', 'beta'),
@@ -42,6 +45,7 @@ def test_or():
 
 
 def test_and():
+    """Test AND expression inside string can be compiled and executed."""
     users = Collection(User, 'apsw://:memory:?table=users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
@@ -54,7 +58,7 @@ def test_and():
             username    VARCHAR(255),
             password    VARCHAR(255)
         );
-        
+
         INSERT INTO users (id, username, password) VALUES
             (1, 'one', 'alpha'),
             (2, 'two', 'beta'),

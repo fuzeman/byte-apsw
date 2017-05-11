@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from byte.collection import Collection
 from byte.model import Model
 from byte.property import Property
@@ -16,6 +18,7 @@ class User(Model):
 
 
 def test_all():
+    """Test all items can be retrieved from database."""
     users = Collection(User, 'apsw://:memory:?table=users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
@@ -28,7 +31,7 @@ def test_all():
             username    VARCHAR(255),
             password    VARCHAR(255)
         );
-        
+
         INSERT INTO users (username, password) VALUES
             ('one', 'alpha'),
             ('two', 'beta'),

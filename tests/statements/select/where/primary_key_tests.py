@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from byte.collection import Collection
 from byte.model import Model
 from byte.property import Property
@@ -16,6 +18,7 @@ class User(Model):
 
 
 def test_simple():
+    """Test items can be retrieved by primary key."""
     users = Collection(User, 'apsw://:memory:?table=users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
@@ -28,7 +31,7 @@ def test_simple():
             username    VARCHAR(255),
             password    VARCHAR(255)
         );
-        
+
         INSERT INTO users (id, username, password) VALUES
             (1, 'one', 'alpha'),
             (2, 'two', 'beta'),
