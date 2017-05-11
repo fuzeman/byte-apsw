@@ -1,4 +1,6 @@
-from byte import Collection, Model, Property, List
+from byte.collection import Collection
+from byte.model import Model
+from byte.property import Property
 
 
 class User(Model):
@@ -29,7 +31,7 @@ def test_or():
     """)
 
     # Validate items
-    users = list(users.select().where('username == "one" or password == "charlie"').execute().iterator())
+    users = list(users.select().where('username == "one" or password == "charlie"').execute())
 
     assert len(users) == 2
 
@@ -52,6 +54,6 @@ def test_and():
     """)
 
     # Validate items
-    users = list(users.select().where('id > 1 and password != ?', 'charlie').execute().iterator())
+    users = list(users.select().where('id > 1 and password != ?', 'charlie').execute())
 
     assert len(users) == 1

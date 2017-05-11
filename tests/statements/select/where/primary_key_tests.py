@@ -1,4 +1,6 @@
-from byte import Collection, Model, Property, List
+from byte.collection import Collection
+from byte.model import Model
+from byte.property import Property
 
 
 class User(Model):
@@ -29,7 +31,7 @@ def test_simple():
     """)
 
     # Validate items
-    user = users.select().where(2).get()
+    user = users.select().where(2).first()
 
     assert user is not None
     assert user.username == 'two'

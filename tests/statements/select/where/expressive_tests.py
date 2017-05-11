@@ -1,4 +1,6 @@
-from byte import Collection, Model, Property, List
+from byte.collection import Collection
+from byte.model import Model
+from byte.property import Property
 
 
 class User(Model):
@@ -29,7 +31,7 @@ def test_equals():
     """)
 
     # Validate items
-    user = users.select().where(User['username'] == 'one').get()
+    user = users.select().where(User['username'] == 'one').first()
 
     assert user is not None
     assert user.username == 'one'
@@ -54,6 +56,6 @@ def test_not_equals():
     """)
 
     # Validate items
-    users = list(users.select().where(User['username'] != 'two').execute().iterator())
+    users = list(users.select().where(User['username'] != 'two').execute())
 
     assert len(users) == 2

@@ -1,4 +1,6 @@
-from byte import Collection, Model, Property, List
+from byte.collection import Collection
+from byte.model import Model
+from byte.property import Property
 
 
 class User(Model):
