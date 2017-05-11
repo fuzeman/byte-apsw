@@ -1,6 +1,8 @@
 from byte.collection import Collection
 from byte.model import Model
 from byte.property import Property
+import byte.compilers.sqlite
+import byte.executors.apsw
 
 
 class User(Model):
@@ -14,7 +16,10 @@ class User(Model):
 
 
 def test_equals():
-    users = Collection(User, 'apsw://:memory:?table=users')
+    users = Collection(User, 'apsw://:memory:?table=users', plugins=[
+        byte.compilers.sqlite,
+        byte.executors.apsw
+    ])
 
     # Create table, and add items directly to database
     users.executor.connect().cursor().execute("""
@@ -39,7 +44,10 @@ def test_equals():
 
 
 def test_not_equals():
-    users = Collection(User, 'apsw://:memory:?table=users')
+    users = Collection(User, 'apsw://:memory:?table=users', plugins=[
+        byte.compilers.sqlite,
+        byte.executors.apsw
+    ])
 
     # Create table, and add items directly to database
     users.executor.connect().cursor().execute("""
