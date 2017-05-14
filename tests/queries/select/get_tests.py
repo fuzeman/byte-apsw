@@ -18,7 +18,7 @@ class User(Model):
 
 
 def test_simple():
-    """Test items can be retrieved by primary key."""
+    """Test single item can be retrieved from database."""
     users = Collection(User, 'apsw://:memory:?table=users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
@@ -39,7 +39,7 @@ def test_simple():
     """)
 
     # Validate items
-    user = users.select().where(2).first()
+    user = users.get(User['id'] == 2)
 
     assert user is not None
     assert user.username == 'two'
