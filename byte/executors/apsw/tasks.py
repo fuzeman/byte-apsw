@@ -7,22 +7,18 @@ from byte.core.models import Task, ReadTask, SelectTask, WriteTask
 class ApswTask(Task):
     """APSW task base class."""
 
-    def __init__(self, executor, sql, parameters):
+    def __init__(self, executor, statements):
         """Create APSW executor task.
 
         :param executor: Executor
         :type executor: byte.executors.core.base.Executor
 
-        :param sql: SQLite Statement
-        :type sql: str
-
-        :param parameters: SQLite Parameters
-        :type parameters: tuple
+        :param statements: SQLite Statements
+        :type statements: list of (str, tuple)
         """
         super(ApswTask, self).__init__(executor)
 
-        self.sql = sql
-        self.parameters = parameters
+        self.statements = statements
 
         self.cursor = None
 
@@ -34,9 +30,14 @@ class ApswTask(Task):
         """Execute task."""
         self.open()
 
-        # Execute SQL
-        print('EXECUTE: %r %r' % (self.sql, self.parameters))
-        self.cursor.execute(self.sql, self.parameters)
+        # Execute statements inside transaction
+        with self.executor.transaction():
+            for operation in self.statements:
+                if not isinstance(operation, tuple) or len(operation) != 2:
+                    raise ValueError('Invalid statement returned from compiler: %s' % (operation,))
+
+                print('EXECUTE: %r %r' % operation)
+                self.cursor.execute(*operation)
 
         return self
 

@@ -61,7 +61,17 @@ class ApswExecutor(ExecutorPlugin):
 
     def construct_compiler(self):
         """Construct compiler."""
-        return self.plugins.get_compiler('sqlite')(self)
+        # Parse version string
+        version_info = tuple([
+            int(value)
+            for value in apsw.sqlitelibversion().split('.')
+        ])
+
+        # Construct compiler
+        return self.plugins.get_compiler('sqlite')(
+            self,
+            version=version_info
+        )
 
     def connect(self):
         """Connect to database.
@@ -88,19 +98,27 @@ class ApswExecutor(ExecutorPlugin):
         """
         return self.connect().cursor()
 
+    def transaction(self):
+        """Create database transaction.
+
+        :return: SQLite Connection
+        :rtype: sqlite3.Connection
+        """
+        return self.connect()
+
     def execute(self, query):
         """Execute query.
 
         :param query: Query
         :type query: byte.queries.Query
         """
-        statement, parameters = self.compiler.compile(query)
+        statements = self.compiler.compile(query)
 
-        if not statement:
-            raise ValueError('Empty statement')
+        if not statements:
+            raise ValueError('No statements returned from compiler')
 
         # Construct task
         if isinstance(query, SelectQuery):
-            return ApswSelectTask(self, statement, parameters).execute()
+            return ApswSelectTask(self, statements).execute()
 
         raise NotImplementedError('Unsupported query: %s' % (type(query).__name__,))
