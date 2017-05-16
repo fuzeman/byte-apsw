@@ -76,3 +76,9 @@ class ApswWriteTask(WriteTask, ApswTask):
     """APSW write task class."""
 
     pass
+
+
+class ApswInsertTask(ApswWriteTask):
+    """APSW insert task class."""
+
+    pass

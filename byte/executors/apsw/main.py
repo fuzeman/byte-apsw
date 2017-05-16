@@ -1,9 +1,9 @@
 """byte-apsw - executor module."""
 from __future__ import absolute_import, division, print_function
 
-from byte.executors.apsw.tasks import ApswSelectTask
+from byte.executors.apsw.tasks import ApswInsertTask, ApswSelectTask
 from byte.executors.core.base import ExecutorPlugin
-from byte.queries import SelectQuery
+from byte.queries import InsertQuery, SelectQuery
 
 import apsw
 import os
@@ -120,5 +120,8 @@ class ApswExecutor(ExecutorPlugin):
         # Construct task
         if isinstance(query, SelectQuery):
             return ApswSelectTask(self, statements).execute()
+
+        if isinstance(query, InsertQuery):
+            return ApswInsertTask(self, statements).execute()
 
         raise NotImplementedError('Unsupported query: %s' % (type(query).__name__,))
