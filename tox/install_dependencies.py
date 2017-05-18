@@ -30,11 +30,16 @@ def install():
 
 
 def install_development():
+    # Install the latest version of APSW
+    apsw_install()
+
+    # Install byte packages
     pip_upgrade(
         os.path.abspath('../byte'),
         os.path.abspath('../byte-sqlite')
     )
 
+    # Install additional requirements
     pip_install(
         '-rrequirements.txt',
         '-rtests/requirements.txt'
@@ -42,6 +47,10 @@ def install_development():
 
 
 def install_release():
+    # Install the latest version of APSW
+    apsw_install()
+
+    # Install additional requirements
     pip_install(
         '-rrequirements.txt',
         '-rtests/requirements.txt'
@@ -57,24 +66,44 @@ def install_travis():
     if branch != 'master':
         branch = 'develop'
 
+    # Install the latest version of APSW
+    apsw_install()
+
+    # Install byte packages
     pip_upgrade(
         'git+https://github.com/fuzeman/byte.git@%s' % (branch,),
-        'git+https://github.com/fuzeman/byte-sqlite.git@%s' % (branch,),
+        'git+https://github.com/fuzeman/byte-sqlite.git@%s' % (branch,)
     )
 
+    # Install additional requirements
     pip_install(
         '-rrequirements.txt',
         '-rtests/requirements.txt'
     )
 
 
+def apsw_install():
+    execute(
+        'pip', 'install', '--upgrade',
+        'https://github.com/rogerbinns/apsw/archive/master.zip',
+        '--global-option=fetch',
+        '--global-option=--missing-checksum-ok',
+        '--global-option=--all',
+        '--global-option=build',
+        '--global-option=--enable-all-extensions'
+    )
+
+
 def pip_install(*args):
-    p = subprocess.Popen(['pip', 'install'] + list(args), shell=False)
-    p.communicate()
+    execute('pip', 'install', *args)
 
 
 def pip_upgrade(*args):
-    p = subprocess.Popen(['pip', 'install', '--upgrade'] + list(args), shell=False)
+    execute('pip', 'install', '--upgrade', *args)
+
+
+def execute(*args):
+    p = subprocess.Popen(list(args), shell=False)
     p.communicate()
 
 
