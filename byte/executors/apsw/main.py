@@ -1,20 +1,26 @@
 """byte-apsw - executor module."""
 from __future__ import absolute_import, division, print_function
 
+from byte.executors.core.base import DatabaseExecutorPlugin
+from byte.executors.apsw.models.connection import ApswConnection
+from byte.executors.apsw.models.cursor import ApswCursor
+from byte.executors.apsw.models.transaction import ApswTransaction
 from byte.executors.apsw.tasks import ApswInsertTask, ApswSelectTask
-from byte.executors.core.base import ExecutorPlugin
 from byte.queries import InsertQuery, SelectQuery
 
 import apsw
+import logging
 import os
 
+log = logging.getLogger(__name__)
 
-class ApswExecutor(ExecutorPlugin):
+
+class ApswExecutor(DatabaseExecutorPlugin):
     """APSW executor class."""
 
     key = 'apsw'
 
-    class Meta(ExecutorPlugin.Meta):
+    class Meta(DatabaseExecutorPlugin.Meta):
         """APSW executor metadata."""
 
         content_type = 'application/x-sqlite3'
@@ -28,19 +34,6 @@ class ApswExecutor(ExecutorPlugin):
             'apsw',
             'sqlite'
         ]
-
-    def __init__(self, collection, model):
-        """Create APSW executor.
-
-        :param collection: Collection
-        :type collection: byte.collection.Collection
-
-        :param model: Model
-        :type model: byte.model.Model
-        """
-        super(ApswExecutor, self).__init__(collection, model)
-
-        self.connection = None
 
     @property
     def path(self):
@@ -73,38 +66,46 @@ class ApswExecutor(ExecutorPlugin):
             version=version_info
         )
 
-    def connect(self):
+    def create_connection(self):
         """Connect to database.
 
         :return: APSW Connection
         :rtype: apsw.Connection
         """
-        if self.connection:
-            return self.connection
-
         # Connect to database
-        self.connection = apsw.Connection(self.path)
+        instance = apsw.Connection(self.path)
 
-        # Enable write-ahead logging
-        self.connection.cursor().execute('PRAGMA journal_mode=WAL;')
+        # Create connection
+        connection = ApswConnection(self, instance)
 
-        return self.connection
+        # Configure connection
+        with connection.transaction() as transaction:
+            # Enable write-ahead logging
+            transaction.execute('PRAGMA journal_mode=WAL;')
 
-    def cursor(self):
-        """Create database cursor.
+        return connection
 
-        :return: APSW Cursor
-        :rtype: apsw.Cursor
-        """
-        return self.connect().cursor()
-
-    def transaction(self):
+    def create_transaction(self, connection=None):
         """Create database transaction.
 
-        :return: SQLite Connection
-        :rtype: sqlite3.Connection
+        :return: APSW Connection
+        :rtype: apsw.Connection
         """
-        return self.connect()
+        return ApswTransaction(
+            self,
+            connection=connection
+        )
+
+    def cursor(self, connection=None):
+        """Create database cursor.
+
+        :return: Cursor
+        :rtype: byte.executors.apsw.models.cursor.ApswCursor
+        """
+        return ApswCursor(
+            self,
+            connection=connection
+        )
 
     def execute(self, query):
         """Execute query.
