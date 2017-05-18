@@ -6,6 +6,8 @@ from byte.property import Property
 import byte.compilers.sqlite
 import byte.executors.apsw
 
+from hamcrest import *
+
 
 class User(Model):
     class Options:
@@ -25,22 +27,32 @@ def test_all():
     ])
 
     # Create table, and add items directly to database
-    users.executor.connect().cursor().execute("""
-        CREATE TABLE users (
-            id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
-            username    VARCHAR(255),
-            password    VARCHAR(255)
-        );
+    with users.executor.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE users (
+                    id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    username    VARCHAR(255),
+                    password    VARCHAR(255)
+                );
+            """)
 
-        INSERT INTO users (username, password) VALUES
-            ('one', 'alpha'),
-            ('two', 'beta'),
-            ('three', 'charlie');
-    """)
+            cursor.execute("INSERT INTO users (username, password) VALUES ('one', 'alpha');")
+            cursor.execute("INSERT INTO users (username, password) VALUES ('two', 'beta');")
+            cursor.execute("INSERT INTO users (username, password) VALUES ('three', 'charlie');")
 
     # Validate items
-    assert [(i.username, i.password) for i in users.all()] == [
-        ('one',     'alpha'),
-        ('two',     'beta'),
-        ('three',   'charlie')
-    ]
+    assert_that(users.all(), only_contains(
+        has_properties({
+            'username': 'one',
+            'password': 'alpha'
+        }),
+        has_properties({
+            'username': 'two',
+            'password': 'beta'
+        }),
+        has_properties({
+            'username': 'three',
+            'password': 'charlie'
+        })
+    ))

@@ -6,6 +6,8 @@ from byte.property import Property
 import byte.compilers.sqlite
 import byte.executors.apsw
 
+from hamcrest import *
+
 
 class User(Model):
     class Options:
@@ -25,23 +27,24 @@ def test_or():
     ])
 
     # Create table, and add items directly to database
-    users.executor.connect().cursor().execute("""
-        CREATE TABLE users (
-            id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
-            username    VARCHAR(255),
-            password    VARCHAR(255)
-        );
+    with users.executor.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE users (
+                    id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    username    VARCHAR(255),
+                    password    VARCHAR(255)
+                );
+            """)
 
-        INSERT INTO users (id, username, password) VALUES
-            (1, 'one', 'alpha'),
-            (2, 'two', 'beta'),
-            (3, 'three', 'charlie');
-    """)
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (1, 'one', 'alpha');")
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (2, 'two', 'beta');")
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (3, 'three', 'charlie');")
 
     # Validate items
     users = list(users.select().where('username == "one" or password == "charlie"').execute())
 
-    assert len(users) == 2
+    assert_that(users, has_length(2))
 
 
 def test_and():
@@ -52,20 +55,21 @@ def test_and():
     ])
 
     # Create table, and add items directly to database
-    users.executor.connect().cursor().execute("""
-        CREATE TABLE users (
-            id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
-            username    VARCHAR(255),
-            password    VARCHAR(255)
-        );
+    with users.executor.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE users (
+                    id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    username    VARCHAR(255),
+                    password    VARCHAR(255)
+                );
+            """)
 
-        INSERT INTO users (id, username, password) VALUES
-            (1, 'one', 'alpha'),
-            (2, 'two', 'beta'),
-            (3, 'three', 'charlie');
-    """)
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (1, 'one', 'alpha');")
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (2, 'two', 'beta');")
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (3, 'three', 'charlie');")
 
     # Validate items
     users = list(users.select().where('id > 1 and password != ?', 'charlie').execute())
 
-    assert len(users) == 1
+    assert_that(users, has_length(1))
