@@ -1,8 +1,8 @@
 """byte-apsw - executor transaction module."""
 from __future__ import absolute_import, division, print_function
 
-from byte.executors.core.models.database import DatabaseTransaction
 from byte.executors.apsw.models.cursor import ApswCursor
+from byte.executors.core.models.database import DatabaseTransaction
 
 
 class ApswTransaction(DatabaseTransaction, ApswCursor):

@@ -7,8 +7,8 @@ import byte.compilers.sqlite
 import byte.executors.apsw
 
 from hamcrest import *
-import pytest
 import apsw
+import pytest
 
 
 class User(Model):
