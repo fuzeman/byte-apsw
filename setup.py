@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Byte APSW setup script (powered by pbr)."""
+"""byte-apsw - setup script (powered by pbr)."""
 
 from setuptools import setup
 
