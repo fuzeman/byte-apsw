@@ -13,7 +13,7 @@ byte-apsw
 .. image:: https://img.shields.io/coveralls/fuzeman/byte-apsw/master.svg?style=flat-square
    :target: https://coveralls.io/github/fuzeman/byte-apsw
 
-APSW executor for `byte <https://github.com/fuzeman/byte`.
+APSW executor for `byte <https://github.com/fuzeman/byte>`.
 
 **Supported Platforms:**
 
