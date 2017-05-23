@@ -12,8 +12,7 @@ python:
   - nightly
 
 install:
-  - travis_retry pip install coveralls
-  - travis_retry pip install tox-travis
+  - travis_retry pip install --upgrade coveralls setuptools tox-travis wheel
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy'* ]]; then travis_retry pip install pyOpenSSL>=16.2.0; fi
 script:
   - tox
@@ -29,3 +28,43 @@ jobs:
       install: travis_retry pip install tox
       script: tox -e flake8
       after_success: true
+
+    - stage: Deploy to GitHub
+      python: 2.7
+
+      install: skip
+      script: python setup.py bdist_wheel sdist
+      after_success: true
+
+      deploy:
+        provider: releases
+        api_key:
+          secure: smZJNyLa/LePMDqJxLRe+la0mX9ixaIoVUlWzyktVgF+/Vqlbyywu2XDE15jNeEy7JXi83IwTAupMVYGjgqOt8yL/LNb8cNT/S2mMDZZBSWdCr5MLLqKZW961GgT9uwLRCyQiH1xD36OWoACs5u0WGhvGClyvBiheX0dN23xNYXYrOWfGXPwDS2K6pOrmcc5GTNu4L7abwuQAq+QIv/9B/f2dLKSrTHuqp2HkBkFPBbbXF5v5Rxs3avnNTlW+wfA5yUNyfhvtehO08XSbUx64fSMEajvWUMRBALVlJP5FlSC9PbrRAVy/5Ph+06IPDlg24Zf0hAJ5ZEfPPkCH6zjwTt52kbTkk6mCz5cP27MLkBHQR1HWzfN3yEk03eFFDbOq8lynwQYyZvXamc0GW4dboASgSDVa80kve7sHGWNPLPKn1oo5o42JEmVEe+NoGG57vVtprPzDx2N+yYVOVS2kQab0KGgzzimjPEwEGYyseVE9bSltLjn6l2yFEMQZP7ayNBB5eBxSUhzhCWmfxsfX7Dv+RVQwsFjQQQqFJtWM5oC0+NYLtWiwybUZORPWFTPE5Kt/awRnQKe11+CJ37gX+dMwIPLMmDX6l47nP9YUvGkfm7rVAt2MpGrPfmvSAw5eD8SmxxG6F2UDGmF/pY4syYoJgWA35Am2w53nqVmHfY=
+        skip_cleanup: true
+        file_glob: true
+        file:
+          - "dist/byte-apsw-*"
+          - "dist/byte_apsw-*"
+        on:
+          condition: $TRAVIS_PYTHON_VERSION = "2.7"
+          repo: fuzeman/byte-apsw
+          tags: true
+
+    - stage: Deploy to PyPI
+      python: 2.7
+
+      install: skip
+      script: skip
+      after_success: true
+
+      deploy:
+        provider: pypi
+        distributions: "bdist_wheel sdist"
+        user: "fm-build"
+        password:
+          secure: qiZFKTOtnCkTShayQMjssE2ja03pbJTsFF9i0H9uTrxkFwg5IU9Rr8MJSjhxDujznWl6/EZH3xu6xqOTAoY3S1r2LDRoNuccr0hzqiaU7lCgDQb9eXcNa6R2JfJ1r0kPazZ9tr9zyZVbWchHKRJ0IvmaUtaYJ1gOmwCFlPc2XeDTy27CENEFYyRY2b7Ozhd6PwvWrT7vUow0Pg40ja6VisbG+r3NS4ytSQXQknItqbkEwGbt+LRsvDrkWyBHF5kivnn30IIabKFyzWyel6SY1Fynen/f2tN2eWemosZghcFEMXwg5URWsmZswanQOROmui3G5KHP+lyae5tWj/iWuhV7bdNdBxe0bmzeJFgTphht5lBb2sSuG8p/7v/P8+lDAnPXqD7zFFWTptSTuhcV/3CYI/PKMUzkLgLuMjIRCySSNLKFjJ2BBe1/sc14IFYMPLR/6V4k2IisgDJn6z3MyQED47Kz/7e3+QLseGJWDZRYf30ONs2oQynSLp0CPyIZMehtIRWdYURDH4YlkmFJG1G1Pw9B4KEdi6UASDQf2H0yhxgOJyOALH3fxPKg4Dr0JQdMY4ta+NhTxOZmv535cC6GYAy0vAxn8rcT8aPsfSWu6Y+fvA1yD2KqIa6dnHeTZ68Dk0IkopOkajQeyK6BBm8mhgMcM5jKFMLdTZ2qce0=
+        skip_cleanup: true
+        on:
+          condition: $TRAVIS_PYTHON_VERSION = "2.7"
+          repo: fuzeman/byte-apsw
+          tags: true
