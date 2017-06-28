@@ -146,6 +146,14 @@ class ApswDatabaseExecutor(Base):
         engine = Plugin.Engine.Database
 
     def open_table(self, table):
+        """Open APSW table executor for :code:`table`.
+
+        :param table: Table
+        :type table: byte.engines.table.Table
+
+        :return: Table Executor
+        :rtype: ApswTableExecutor
+        """
         return ApswTableExecutor(
             table, self.uri,
             connections=self.connections,
