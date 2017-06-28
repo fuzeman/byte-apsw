@@ -1,6 +1,7 @@
 """byte-apsw - executor module."""
 from __future__ import absolute_import, division, print_function
 
+from byte.core.plugin.base import Plugin
 from byte.executors.apsw.models.connection import ApswConnection
 from byte.executors.apsw.models.cursor import ApswCursor
 from byte.executors.apsw.models.transaction import ApswTransaction
@@ -15,13 +16,11 @@ import os
 log = logging.getLogger(__name__)
 
 
-class ApswExecutor(DatabaseExecutorPlugin):
-    """APSW executor class."""
-
-    key = 'apsw'
+class Base(DatabaseExecutorPlugin):
+    """APSW base executor class."""
 
     class Meta(DatabaseExecutorPlugin.Meta):
-        """APSW executor metadata."""
+        """APSW base executor metadata."""
 
         content_type = 'application/x-sqlite3'
 
@@ -43,8 +42,8 @@ class ApswExecutor(DatabaseExecutorPlugin):
         :rtype: str
         """
         path = (
-            self.collection.uri.netloc +
-            self.collection.uri.path
+            self.engine.uri.netloc +
+            self.engine.uri.path
         )
 
         if path == ':memory:':
@@ -60,11 +59,19 @@ class ApswExecutor(DatabaseExecutorPlugin):
             for value in apsw.sqlitelibversion().split('.')
         ])
 
-        # Construct compiler
-        return self.plugins.get_compiler('sqlite')(
-            self,
-            version=version_info
+        # Find matching compiler
+        cls = self.plugins.match(
+            Plugin.Kind.Compiler,
+            engine=Plugin.Engine.Table,
+            extension='sqlite'
         )
+
+        if not cls:
+            return None
+
+        # Construct compiler
+        self._compiler = cls(self, version=version_info)
+        return self._compiler
 
     def create_connection(self):
         """Connect to database.
@@ -126,3 +133,33 @@ class ApswExecutor(DatabaseExecutorPlugin):
             return ApswInsertTask(self, statements).execute()
 
         raise NotImplementedError('Unsupported query: %s' % (type(query).__name__,))
+
+
+class ApswDatabaseExecutor(Base):
+    """APSW database executor class."""
+
+    key = 'database'
+
+    class Meta(Base.Meta):
+        """APSW database executor metadata."""
+
+        engine = Plugin.Engine.Database
+
+    def open_table(self, table):
+        return ApswTableExecutor(
+            table, self.uri,
+            connections=self.connections,
+            transactions=self.transactions,
+            **self.parameters
+        )
+
+
+class ApswTableExecutor(Base):
+    """APSW table executor class."""
+
+    key = 'table'
+
+    class Meta(Base.Meta):
+        """APSW table executor metadata."""
+
+        engine = Plugin.Engine.Table
