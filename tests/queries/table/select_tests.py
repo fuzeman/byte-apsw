@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from byte.collection import Collection
-from byte.model import Model
-from byte.property import Property
+from byte.table import Model, Property, Table
 import byte.compilers.sqlite
 import byte.executors.apsw
 
@@ -21,7 +19,7 @@ class User(Model):
 
 def test_all():
     """Test all items can be retrieved from database."""
-    users = Collection(User, 'apsw://:memory:?table=users', plugins=[
+    users = Table(User, 'apsw://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
     ])
@@ -54,5 +52,39 @@ def test_all():
         has_properties({
             'username': 'three',
             'password': 'charlie'
+        })
+    ))
+
+
+def test_get():
+    """Test single item can be retrieved from database."""
+    users = Table(User, 'apsw://:memory:', name='users', plugins=[
+        byte.compilers.sqlite,
+        byte.executors.apsw
+    ])
+
+    # Create table, and add items directly to database
+    with users.executor.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE users (
+                    id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    username    VARCHAR(255),
+                    password    VARCHAR(255)
+                );
+            """)
+
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (1, 'one', 'alpha');")
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (2, 'two', 'beta');")
+            cursor.execute("INSERT INTO users (id, username, password) VALUES (3, 'three', 'charlie');")
+
+    # Validate items
+    user = users.get(User['id'] == 2)
+
+    assert_that(user, all_of(
+        not_none(),
+        has_properties({
+            'username': 'two',
+            'password': 'beta'
         })
     ))

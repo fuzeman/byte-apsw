@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from byte.collection import Collection
-from byte.model import Model
-from byte.property import Property
+from byte.table import Model, Property, Table
 import byte.compilers.sqlite
 import byte.executors.apsw
 
@@ -21,7 +19,7 @@ class User(Model):
 
 def test_equals():
     """Test equals expression can be compiled and executed."""
-    users = Collection(User, 'apsw://:memory:?table=users', plugins=[
+    users = Table(User, 'apsw://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
     ])
@@ -55,7 +53,7 @@ def test_equals():
 
 def test_not_equals():
     """Test not-equals expression can be compiled and executed."""
-    users = Collection(User, 'apsw://:memory:?table=users', plugins=[
+    users = Table(User, 'apsw://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.apsw
     ])
